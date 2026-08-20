@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>6.2 Layout — Open House Newsletter Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1F6FC;
+  --panel:#FFFFFF;
+  --ink:#16232F;
+  --ink-soft:#4B5A6B;
+  --accent:#2F6FED;
+  --accent-deep:#1D4FBF;
+  --accent-soft:#E1EBFC;
+  --sky:#8EC6F5;
+  --amber:#FFB443;
+  --amber-soft:#FFF3DD;
+  --coral:#FF5D5D;
+  --coral-soft:#FFE6E6;
+  --green:#1FAE7A;
+  --green-soft:#DEF7EC;
+  --muted:#7C8AA0;
+  --line:#DAE5F3;
+  --radius:16px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+button{font-family:inherit;cursor:pointer;}
+
+.deck{position:relative;width:100%;height:100vh;display:flex;flex-direction:column;}
+.progress-track{height:5px;width:100%;background:var(--line);flex-shrink:0;}
+.progress-fill{height:100%;background:var(--accent);width:5.5%;transition:width .4s ease;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;flex-shrink:0;gap:12px;}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);font-weight:600;}
+.eyebrow .sub{color:var(--muted);font-weight:500;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.icon-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:8px 14px;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+.slides-viewport{flex:1;position:relative;overflow:hidden;}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:18px 6vw 90px;overflow-y:auto;
+  opacity:0;pointer-events:none;transform:translateX(24px);
+  transition:opacity .35s ease, transform .35s ease;
+}
+.slide.active{opacity:1;pointer-events:auto;transform:translateX(0);}
+.slide-inner{max-width:920px;width:100%;margin:0 auto;padding-top:1.2vh;}
+
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:8px;}
+.slide h1{font-size:clamp(26px,4vw,40px);margin:0 0 10px;line-height:1.08;}
+.slide h1 span{color:var(--accent);}
+.lead{font-size:16px;color:var(--ink-soft);line-height:1.55;max-width:70ch;}
+
+/* Bottom nav */
+.bottombar{
+  position:absolute;bottom:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;background:linear-gradient(0deg,var(--paper) 60%,rgba(245,243,238,0));
+  z-index:20;
+}
+.nav-btn{
+  background:var(--ink);color:var(--paper);border:none;border-radius:999px;
+  padding:11px 20px;font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:6px;
+}
+.nav-btn.secondary{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+.nav-btn:disabled{opacity:.3;pointer-events:none;}
+.dots{display:flex;gap:4px;flex-wrap:wrap;max-width:340px;justify-content:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all .25s ease;}
+.dot.active{background:var(--accent);width:18px;border-radius:4px;}
+.dot.done{background:var(--accent);opacity:.35;}
+
+/* Cards & panels */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media(max-width:820px){.grid3{grid-template-columns:1fr;}}
+
+/* Flip cards */
+.flip-card{perspective:1200px;height:150px;cursor:pointer;}
+.flip-card:hover .flip-front{transform:scale(1.015);}
+.flip-front{transition:transform .2s ease;}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;}
+.flip-front{background:var(--accent-soft);border:1px solid #d6d4fb;}
+.flip-back{background:var(--ink);color:var(--paper);transform:rotateY(180deg);}
+.flip-front .term{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:var(--accent);}
+.flip-front .hint{font-size:11.5px;color:var(--muted);margin-top:6px;}
+.flip-back .def{font-size:13.5px;line-height:1.5;}
+.flip-icon{position:absolute;top:12px;right:14px;font-size:11px;color:var(--muted);}
+
+/* Ribbon mockup */
+.ribbon{
+  background:#fafafa;border:1px solid #d7d7d7;border-radius:8px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:visible;user-select:none;
+  position:relative;
+}
+.ribbon-tabs{display:flex;gap:2px;background:#f0f0f0;border-bottom:1px solid #d7d7d7;padding:0 8px;border-radius:8px 8px 0 0;}
+.ribbon-tab{padding:8px 14px;font-size:12.5px;color:#666;font-weight:500;}
+.ribbon-tab.active{background:#fafafa;color:var(--accent);font-weight:700;border-bottom:2px solid var(--accent);}
+.ribbon-body{display:flex;align-items:stretch;padding:8px 12px;gap:2px;flex-wrap:wrap;border-radius:0 0 8px 8px;}
+.rb-group{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 10px;border-right:1px solid #e5e5e5;position:relative;}
+.rb-group:last-child{border-right:none;}
+.rb-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 8px;border-radius:4px;font-size:10.5px;color:#333;transition:background .15s;}
+.rb-btn .ic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.rb-group-label{font-size:9.5px;color:#999;margin-top:2px;}
+.rb-btn.glow{background:#fff2d6;box-shadow:0 0 0 2px var(--amber);}
+.rb-btn.active-click{background:var(--accent-soft);}
+
+/* dropdown menu mockup */
+.rb-dropdown{
+  position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #d0d0d0;
+  border-radius:6px;box-shadow:0 10px 30px rgba(22,35,47,.22);z-index:200;min-width:190px;
+  opacity:0;transform:translateY(-6px);pointer-events:none;transition:all .25s ease;
+}
+.rb-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+.rb-dropdown-item{display:flex;align-items:center;gap:10px;padding:8px 12px;font-size:12px;color:#333;border-bottom:1px solid #f2f2f2;}
+.rb-dropdown-item:last-child{border-bottom:none;}
+.rb-dropdown-item.highlight{background:var(--amber-soft);box-shadow:inset 3px 0 0 var(--coral);}
+.rb-dropdown-heading{padding:6px 12px 2px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.04em;}
+.cursor-dot{
+  position:absolute;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle,rgba(70,64,222,.9),rgba(70,64,222,.15));
+  pointer-events:none;z-index:40;opacity:0;transition:all .5s cubic-bezier(.4,.1,.2,1);
+}
+.cursor-dot.show{opacity:1;}
+
+/* Demo block */
+.demo-block{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0;overflow:visible;position:relative;}
+.demo-caption{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;}
+.replay-btn{
+  display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;border:none;
+  border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;margin-top:12px;
+}
+.replay-btn:hover{background:var(--accent-deep);}
+.step-label{
+  display:inline-block;background:var(--ink);color:var(--paper);font-family:'IBM Plex Mono',monospace;
+  font-size:11px;padding:4px 10px;border-radius:999px;margin-bottom:10px;
+}
+
+/* Document canvas mockup (newsletter preview) */
+.doc-page{
+  background:#fff;border:1px solid #ddd;box-shadow:0 4px 16px rgba(0,0,0,.08);
+  width:220px;min-height:290px;padding:14px;position:relative;font-size:7px;line-height:1.4;color:#444;
+  transition:all .5s ease;
+}
+.doc-page.landscape{width:290px;min-height:220px;}
+.doc-page .doc-header{font-size:6px;color:#999;border-bottom:1px solid #eee;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;opacity:0;transition:opacity .4s;}
+.doc-page.show-header .doc-header{opacity:1;}
+.doc-page .doc-footer{position:absolute;bottom:8px;left:14px;right:14px;font-size:6px;color:#999;border-top:1px solid #eee;padding-top:3px;text-align:center;opacity:0;transition:opacity .4s;}
+.doc-page.show-footer .doc-footer{opacity:1;}
+.doc-page .doc-title{font-weight:700;font-size:9px;color:#222;margin-bottom:4px;}
+.doc-page .doc-body{columns:1;column-gap:8px;}
+.doc-page.two-col .doc-body{columns:2;}
+.doc-page .doc-body p{margin:0 0 4px;}
+.doc-pages-row{display:flex;gap:22px;align-items:flex-end;justify-content:center;flex-wrap:wrap;}
+.doc-break-mark{font-size:6px;color:var(--coral);text-align:center;border-top:1px dashed var(--coral);border-bottom:1px dashed var(--coral);margin:5px 0;padding:1px 0;opacity:0;transition:opacity .4s;}
+.doc-page.show-break .doc-break-mark{opacity:1;}
+
+/* Table */
+table.spec-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+table.spec-table th,table.spec-table td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top;}
+table.spec-table th{background:var(--accent-soft);color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+
+/* Quiz */
+.quiz-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
+.quiz-q{font-weight:600;font-size:16px;margin-bottom:14px;}
+.quiz-opt{
+  display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--line);
+  border-radius:10px;padding:12px 16px;margin-bottom:9px;font-size:14px;color:var(--ink);transition:all .15s;
+}
+.quiz-opt:hover{border-color:var(--accent);}
+.quiz-opt.correct{background:var(--green-soft);border-color:var(--green);}
+.quiz-opt.wrong{background:var(--coral-soft);border-color:var(--coral);}
+.quiz-opt.disabled{pointer-events:none;opacity:.55;}
+.quiz-feedback{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:13.5px;line-height:1.5;display:none;}
+.quiz-feedback.show{display:block;}
+.quiz-feedback.correct-fb{background:var(--green-soft);color:#0d6b48;}
+.quiz-feedback.wrong-fb{background:var(--coral-soft);color:#a02c2c;}
+.attempts-label{font-size:11.5px;color:var(--muted);margin-bottom:10px;}
+
+/* Did you know */
+.dyk-box{background:var(--amber-soft);border:1px dashed var(--amber);border-radius:var(--radius);padding:18px 20px;}
+.dyk-label{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:#946200;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.dyk-bites{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.dyk-bite{display:flex;align-items:flex-start;gap:10px;font-size:13.5px;line-height:1.5;color:#5c4300;}
+.dyk-bite .be-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.dyk-bite b{color:#3d2e00;}
+
+/* Mini visual mockups for flip cards / examples */
+.mini-examples{display:flex;gap:10px;margin-top:10px;}
+.mini-doc{
+  flex:1;background:#fff;border:1px solid #dde6f2;border-radius:8px;padding:8px;font-size:5.5px;line-height:1.3;color:#889;
+  box-shadow:0 2px 8px rgba(22,35,47,.06);
+}
+.mini-doc .mini-label{font-size:8.5px;font-weight:700;color:var(--accent);margin-bottom:5px;font-family:'Space Grotesk',sans-serif;}
+.mini-doc.single .mini-lines{display:block;}
+.mini-doc.multi .mini-lines{columns:2;column-gap:5px;}
+.mini-doc .bar{background:#eef3fb;height:4px;border-radius:2px;margin-bottom:3px;}
+.mini-doc .bar.short{width:60%;}
+.mini-tag{font-size:9.5px;color:var(--muted);text-align:center;margin-top:5px;}
+
+/* Section-break visual mockup */
+.sb-visual{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;}
+.sb-mini-page{width:70px;height:92px;background:#fff;border:1.5px solid var(--accent);border-radius:5px;position:relative;box-shadow:0 2px 8px rgba(22,35,47,.08);}
+.sb-mini-page.wide{width:92px;height:70px;}
+.sb-mini-page .sb-fill{position:absolute;top:8px;left:8px;right:8px;bottom:8px;}
+.sb-mini-page .sb-fill .bar{background:var(--accent-soft);height:5px;border-radius:2px;margin-bottom:4px;}
+.sb-scissors{font-size:20px;color:var(--coral);}
+.sb-labels{display:flex;justify-content:center;gap:34px;margin-top:8px;font-size:10.5px;color:var(--muted);font-weight:600;}
+
+/* Mascot + gentle animation */
+.mascot{
+  display:inline-block;font-size:40px;animation:float 3.2s ease-in-out infinite;
+  filter:drop-shadow(0 6px 10px rgba(47,111,237,.18));
+}
+@keyframes float{
+  0%,100%{transform:translateY(0) rotate(-3deg);}
+  50%{transform:translateY(-8px) rotate(3deg);}
+}
+@keyframes wiggle{
+  0%,100%{transform:rotate(0deg);}
+  25%{transform:rotate(-4deg);}
+  75%{transform:rotate(4deg);}
+}
+.wiggle-hover:hover{animation:wiggle .4s ease;}
+@keyframes popIn{
+  0%{transform:scale(.85);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+.slide.active .panel, .slide.active .flip-card, .slide.active .demo-block{animation:popIn .45s ease;}
+
+/* Word practice banner */
+.word-banner{
+  display:flex;align-items:center;gap:14px;background:var(--green-soft);border:1px solid #b8e8d3;
+  border-radius:var(--radius);padding:16px 18px;margin-top:16px;
+}
+.word-banner .wicon{width:38px;height:38px;flex-shrink:0;background:#185ABD;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-family:'Space Grotesk',sans-serif;font-size:16px;}
+.word-banner .wtext{font-size:13.5px;color:#0d6b48;line-height:1.4;}
+.word-banner .wtext b{color:#0a4d34;}
+
+/* Glossary + Jump menu overlay */
+.overlay{position:fixed;inset:0;background:rgba(23,24,28,.55);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.show{display:flex;}
+.overlay-panel{background:var(--panel);border-radius:20px;max-width:640px;width:100%;max-height:82vh;overflow-y:auto;padding:26px 26px 22px;}
+.overlay-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.overlay-head h2{margin:0;font-size:20px;}
+.close-x{background:var(--paper);border:none;border-radius:50%;width:32px;height:32px;font-size:16px;color:var(--ink-soft);}
+.gloss-item{padding:14px 0;border-bottom:1px solid var(--line);}
+.gloss-item:last-child{border-bottom:none;}
+.gloss-term{font-weight:700;color:var(--accent);font-size:15px;margin-bottom:3px;}
+.gloss-def{font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+.jump-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;margin-bottom:6px;
+  background:var(--paper);font-size:14px;font-weight:600;
+}
+.jump-item .num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);background:var(--accent-soft);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.jump-item.section-head{background:transparent;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 4px 4px;}
+
+/* misc */
+.badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.03em;}
+.badge.mission{background:var(--ink);color:var(--paper);}
+.two-col-txt{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:11px;color:#555;line-height:1.5;}
+ul.plain{padding-left:18px;margin:0;font-size:14px;line-height:1.7;color:var(--ink-soft);}
+ul.plain li strong{color:var(--ink);}
+.outcome-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.outcome-list li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:var(--ink-soft);}
+.outcome-list li .oc{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-weight:700;}
+.slide-title-icon{font-size:34px;margin-bottom:10px;display:block;}
+@media(max-width:640px){.slide{padding:14px 5vw 96px;} .grid3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="deck">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="topbar">
+    <div>
+      <div class="eyebrow" id="eyebrowText">SECTION 1 OF 4 · MISSION BRIEFING</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="openJump()">☰ Sections</button>
+      <button class="icon-btn" onclick="openGlossary()">🔤 Glossary</button>
+    </div>
+  </div>
+
+  <div class="slides-viewport" id="viewport">
+    <!-- SLIDES INJECTED BELOW -->
+  </div>
+
+  <div class="bottombar">
+    <button class="nav-btn secondary" id="prevBtn" onclick="go(-1)">← Back</button>
+    <div class="dots" id="dotsWrap"></div>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">Next →</button>
+  </div>
+</div>
+
+<!-- GLOSSARY OVERLAY -->
+<div class="overlay" id="glossOverlay">
+  <div class="overlay-panel">
+    <div class="overlay-head">
+      <h2>📖 Glossary — 6.2 Layout</h2>
+      <button class="close-x" onclick="closeOverlay('glossOverlay')">✕</button>
+    </div>
+    <div id="glossList"></div>
+  </div>
+</div>
+
+<!-- JUMP MENU OVERLAY -->
+<div class="overlay" id="jumpOverlay">
+  <div class="overlay-panel">
+    <div class="overlay-head">
+      <h2>Jump to a section</h2>
+      <button class="close-x" onclick="closeOverlay('jumpOverlay')">✕</button>
+    </div>
+    <div id="jumpList"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DATA: glossary + section map
+   ============================================================ */
+const GLOSSARY = [
+  {term:"Column", def:"A vertical block of text. A single-column layout runs text across the full page width; a multi-column layout splits it into two or more side-by-side blocks, like a newspaper or newsletter."},
+  {term:"Header", def:"A reserved space at the TOP of every page, used to display information such as a title, date, author, or logo."},
+  {term:"Footer", def:"A reserved space at the BOTTOM of every page, used to display information such as a page number or document title."},
+  {term:"Page number", def:"Consecutive numbers assigned to each page of a document, usually placed in a header or footer."},
+  {term:"Page break", def:"A break in the document that separates its content into different pages. Can be automatic (the word processor does it for you) or manual (you insert it yourself)."},
+  {term:"Section break", def:"A break used to separate parts of a document so that different formatting or layouts — such as columns, orientation, or headers/footers — can be applied to each part independently."},
+  {term:"Page orientation", def:"The way a page is held for reading — either Portrait (taller than wide) or Landscape (wider than tall)."},
+];
+
+const SECTIONS = [
+  {label:"Mission Briefing", start:0, end:1},
+  {label:"6.2.1 Columns", start:2, end:5},
+  {label:"6.2.2 Headers, Footers & Page Numbers", start:6, end:10},
+  {label:"6.2.3 Page & Section Breaks", start:11, end:17},
+];
+
+/* ============================================================
+   SLIDE MARKUP
+   ============================================================ */
+const slideHTML = [];
+
+// SLIDE 0 — Title / Mission Briefing
+slideHTML.push(`
+<div class="slide-inner">
+  <span class="mascot slide-title-icon">📰</span>
+  <div class="badge mission">MISSION FILE · 6.2 LAYOUT</div>
+  <h1 style="margin-top:14px;">Build the <span>Open House Newsletter</span></h1>
+  <p class="lead">Your school's Open House is in two weeks, and the newsletter committee needs a 2-page handout: a welcome page introducing the school, and a schedule page listing every event. Over this mission you'll learn the exact Word skills needed to lay it out properly — columns, headers &amp; footers, page numbers, and page/section breaks (including flipping a page sideways for a wide timetable).</p>
+  <div class="panel" style="margin-top:20px;">
+    <div class="doc-pages-row">
+      <div style="text-align:center;">
+        <div class="doc-page" id="titlePreviewP1">
+          <div class="doc-header"><span>OPEN HOUSE 2026</span><span>Riverside Secondary</span></div>
+          <div class="doc-title">Welcome to Our Open House!</div>
+          <div class="doc-body">
+            <p>We're thrilled to welcome you and your family to explore our school...</p>
+          </div>
+          <div class="doc-footer">Page 1</div>
+        </div>
+        <div class="demo-caption">Page 1 · Portrait</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="doc-page landscape" id="titlePreviewP2">
+          <div class="doc-title">Event Schedule</div>
+          <div class="doc-body two-col">
+            <p>9:00 — Registration Opens</p><p>10:00 — Principal's Address</p>
+          </div>
+          <div class="doc-footer">Page 2</div>
+        </div>
+        <div class="demo-caption">Page 2 · Landscape</div>
+      </div>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:14px;font-size:14px;">This is the finished target. By the end of this deck you'll know exactly how each piece was built — then you'll build it yourself in Microsoft Word.</p>
+</div>
+`);
+
+// SLIDE 1 — Learning outcomes
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">What you'll be able to do</div>
+  <h1>Learning outcomes</h1>
+  <p class="lead">By the end of 6.2, you should be able to:</p>
+  <div class="panel" style="margin-top:14px;">
+    <ul class="outcome-list">
+      <li><span class="oc">1</span> Give examples of when to use single-column vs multiple-column layouts.</li>
+      <li><span class="oc">2</span> Create single-column and multiple-column layouts using the built-in Columns feature.</li>
+      <li><span class="oc">3</span> Insert headers and footers.</li>
+      <li><span class="oc">4</span> Insert page numbers, and set the starting page number to a specified value.</li>
+      <li><span class="oc">5</span> Insert or remove page breaks.</li>
+      <li><span class="oc">6</span> Use section breaks to format a document — including applying both portrait and landscape orientation in the same file.</li>
+    </ul>
+  </div>
+  <div class="word-banner" style="margin-top:18px;">
+    <div class="wicon">W</div>
+    <div class="wtext"><b>Have Word ready.</b> After each section, you'll get a practice file to try the exact skill yourself.</div>
+  </div>
+</div>
+`);
+
+// SLIDE 2 — Columns intro
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.1 Columns · Part 1</div>
+  <h1>Single column, or multiple?</h1>
+  <p class="lead">The layout of text in a document is usually arranged based on the TYPE of document. Flip each card below to see when each layout style is used.</p>
+  <div class="grid2" style="margin-top:16px;">
+    <div>
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-face flip-front"><div class="term">Single-column</div><div class="hint">Tap to reveal examples</div></div>
+          <div class="flip-face flip-back"><div class="def">Letters, reports, essays — read top-to-bottom in one flow, like our welcome message.</div></div>
+        </div>
+      </div>
+      <div class="mini-doc single" style="margin-top:10px;">
+        <div class="mini-label">📄 Letter / Report</div>
+        <div class="mini-lines"><div class="bar"></div><div class="bar"></div><div class="bar short"></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-face flip-front"><div class="term">Multi-column</div><div class="hint">Tap to reveal examples</div></div>
+          <div class="flip-face flip-back"><div class="def">Magazines, menus, newspapers, adverts — shorter columns, like our Club Highlights section.</div></div>
+        </div>
+      </div>
+      <div class="mini-doc multi" style="margin-top:10px;">
+        <div class="mini-label">📰 Newspaper / Newsletter</div>
+        <div class="mini-lines"><div class="bar"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div><div class="bar"></div><div class="bar short"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:16px;">
+    <p style="margin:0;font-size:13.5px;color:var(--ink-soft);"><strong>Why it matters:</strong> shorter columns are easier to read on a wide page than one long line stretching edge to edge.</p>
+  </div>
+</div>
+`);
+
+// SLIDE 3 — Columns demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.1 Columns · Part 2</div>
+  <h1>Applying the built-in Columns feature</h1>
+  <p class="lead">Our "Club Highlights" section needs 2 columns. Click Replay to see exactly where this lives in Word.</p>
+  <div class="demo-block">
+    <span class="step-label" id="colStepLabel">Step 1 — Select the text, then open the Layout tab</span>
+    <div class="ribbon" style="max-width:480px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs">
+        <div class="ribbon-tab">Home</div><div class="ribbon-tab">Insert</div><div class="ribbon-tab" id="colLayoutTab">Layout</div><div class="ribbon-tab">References</div>
+      </div>
+      <div class="ribbon-body">
+        <div class="rb-group" style="position:relative;">
+          <div class="rb-btn" id="colBtn"><div class="ic">▤</div>Columns</div>
+          <div class="rb-group-label">Page Setup</div>
+          <div class="rb-dropdown" id="colDropdown" style="min-width:150px;">
+            <div class="rb-dropdown-item">▬ One</div>
+            <div class="rb-dropdown-item" id="colTwoItem">▥ Two</div>
+            <div class="rb-dropdown-item">▦ Three</div>
+            <div class="rb-dropdown-item">More Columns…</div>
+          </div>
+        </div>
+        <div class="rb-group"><div class="rb-btn"><div class="ic">↕</div>Breaks</div></div>
+        <div class="rb-group"><div class="rb-btn"><div class="ic">▭</div>Orientation</div></div>
+      </div>
+      <div class="cursor-dot" id="colCursor"></div>
+    </div>
+    <div class="doc-pages-row" style="margin-top:18px;">
+      <div class="doc-page" id="colDocPreview">
+        <div class="doc-title">Club Highlights</div>
+        <div class="doc-body" id="colDocBody">
+          <p>Robotics Club meets every Tuesday and builds competition bots for the regional showcase...</p>
+          <p>The Art Club is hosting a live mural painting during Open House, open to all visitors...</p>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playColumnsDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Layout tab → Page Setup group → Columns → choose "Two". The selected text instantly re-flows into two side-by-side blocks.</p>
+  </div>
+</div>
+`);
+
+// SLIDE 4 — Columns quiz
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.1 Columns · Check</div>
+  <h1>Quick check</h1>
+  <div class="quiz-box" id="quiz-columns">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">Which ribbon tab has the built-in Columns feature?</div>
+    <button class="quiz-opt" data-correct="false">Home</button>
+    <button class="quiz-opt" data-correct="false">Insert</button>
+    <button class="quiz-opt" data-correct="true">Layout</button>
+    <button class="quiz-opt" data-correct="false">References</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+// SLIDE 5 — extra quiz (use case scenario) - kept in columns section as it's about 4.2.1
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.1 Columns · Check</div>
+  <h1>Spot the right layout</h1>
+  <div class="quiz-box" id="quiz-columns2">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">The Open House committee is also designing a single-page event poster to pin on noticeboards, with short punchy blurbs. Which layout suits it best?</div>
+    <button class="quiz-opt" data-correct="false">Single-column, like a formal letter</button>
+    <button class="quiz-opt" data-correct="true">Multi-column, like a newspaper or advertisement</button>
+    <button class="quiz-opt" data-correct="false">It doesn't matter — columns only affect printing, not screens</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+// SLIDE 6 — Headers/Footers intro
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.2 Headers, Footers &amp; Page Numbers · Part 1</div>
+  <h1>What are headers &amp; footers?</h1>
+  <p class="lead">Every page of our newsletter needs "Open House 2026" and the school name repeated automatically — that's exactly what headers and footers are for.</p>
+  <div class="grid2" style="margin-top:16px;">
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-face flip-front"><div class="term">Header</div><div class="hint">Tap to reveal</div></div>
+        <div class="flip-face flip-back"><div class="def">Reserved space at the TOP of a page. Displays info like the document title, date, author's name, page number, or a logo — and repeats on every page.</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-face flip-front"><div class="term">Footer</div><div class="hint">Tap to reveal</div></div>
+        <div class="flip-face flip-back"><div class="def">Reserved space at the BOTTOM of a page. Commonly used for page numbers — also repeats on every page automatically.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:16px;"><p style="margin:0;font-size:13.5px;color:var(--ink-soft);"><strong>Key idea:</strong> information placed in headers/footers appears on EVERY page of the document — you only need to type it once.</p></div>
+</div>
+`);
+
+// SLIDE 7 — Headers/Footers demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.2 Headers, Footers &amp; Page Numbers · Part 2</div>
+  <h1>Inserting a header</h1>
+  <p class="lead">Two ways to do this: double-click the top of a page, or use a built-in design from the ribbon.</p>
+  <div class="demo-block">
+    <span class="step-label" id="hfStepLabel">Step 1 — Open the Insert tab</span>
+    <div class="ribbon" style="max-width:520px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs">
+        <div class="ribbon-tab">Home</div><div class="ribbon-tab" id="hfInsertTab">Insert</div><div class="ribbon-tab">Layout</div><div class="ribbon-tab">References</div>
+      </div>
+      <div class="ribbon-body">
+        <div class="rb-group" style="position:relative;">
+          <div class="rb-btn" id="hfBtn"><div class="ic">📄</div>Header</div>
+          <div class="rb-group-label">Header &amp; Footer</div>
+          <div class="rb-dropdown" id="hfDropdown" style="min-width:170px;">
+            <div class="rb-dropdown-heading">Built-in</div>
+            <div class="rb-dropdown-item" id="hfBlankItem">▭ Blank</div>
+            <div class="rb-dropdown-item">▦ Blank (Three Columns)</div>
+            <div class="rb-dropdown-item">Edit Header</div>
+          </div>
+        </div>
+        <div class="rb-group"><div class="rb-btn"><div class="ic">📃</div>Footer</div></div>
+        <div class="rb-group"><div class="rb-btn"><div class="ic">#</div>Page Number</div></div>
+      </div>
+      <div class="cursor-dot" id="hfCursor"></div>
+    </div>
+    <div class="doc-pages-row" style="margin-top:18px;">
+      <div class="doc-page" id="hfDocPreview">
+        <div class="doc-header"><span>OPEN HOUSE 2026</span><span>Riverside Secondary</span></div>
+        <div class="doc-title">Welcome to Our Open House!</div>
+        <div class="doc-body"><p>We're thrilled to welcome you and your family to explore our school...</p></div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playHFDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Insert tab → Header &amp; Footer group → Header → choose "Blank" → type your text. It now repeats on every page.</p>
+  </div>
+</div>
+`);
+
+// SLIDE 8 — Page numbers demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.2 Headers, Footers &amp; Page Numbers · Part 3</div>
+  <h1>Page numbers, and starting at a chosen value</h1>
+  <p class="lead">By default, page numbers start at 1. But you can set a custom starting number, or change the number format (a, b, c… or i, ii, iii…).</p>
+  <div class="demo-block">
+    <span class="step-label" id="pnStepLabel">Step 1 — Insert → Page Number → Bottom of Page</span>
+    <div class="ribbon" style="max-width:520px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs"><div class="ribbon-tab">Home</div><div class="ribbon-tab active">Insert</div><div class="ribbon-tab">Layout</div></div>
+      <div class="ribbon-body">
+        <div class="rb-group" style="position:relative;">
+          <div class="rb-btn" id="pnBtn"><div class="ic">#</div>Page Number</div>
+          <div class="rb-group-label">Header &amp; Footer</div>
+          <div class="rb-dropdown" id="pnDropdown">
+            <div class="rb-dropdown-item">Top of Page ›</div>
+            <div class="rb-dropdown-item" id="pnBottomItem">Bottom of Page ›</div>
+            <div class="rb-dropdown-item" id="pnFormatItem">Format Page Numbers…</div>
+          </div>
+        </div>
+      </div>
+      <div class="cursor-dot" id="pnCursor"></div>
+    </div>
+
+    <div class="panel" id="pnFormatDialog" style="max-width:340px;margin:14px auto 0;display:none;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:10px;">Page Number Format</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px;">Number format</div>
+      <div style="border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12.5px;margin-bottom:10px;">1, 2, 3, …</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px;">Start at</div>
+      <div class="mono" id="pnStartValue" style="border:2px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px;width:60px;text-align:center;">1</div>
+    </div>
+
+    <div class="doc-pages-row" style="margin-top:16px;">
+      <div class="doc-page" id="pnDocPreview">
+        <div class="doc-title">Welcome to Our Open House!</div>
+        <div class="doc-body"><p>We're thrilled to welcome you...</p></div>
+        <div class="doc-footer">Page <span id="pnFooterNum">1</span></div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playPageNumDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Right-click a page number → "Format Page Numbers…" → set "Start at" to any value (e.g. this cover page could start the newsletter at page 1, while a stapled programme booklet might continue from page 5).</p>
+  </div>
+</div>
+`);
+
+// SLIDE 9 — HF quiz
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.2 · Check</div>
+  <h1>Quick check</h1>
+  <div class="quiz-box" id="quiz-hf1">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">True or False: information placed in a header will only appear on the page where you typed it.</div>
+    <button class="quiz-opt" data-correct="false">True</button>
+    <button class="quiz-opt" data-correct="true">False</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.2 · Check</div>
+  <h1>Quick check</h1>
+  <div class="quiz-box" id="quiz-hf2">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">You want your newsletter's page numbers to read "i, ii, iii…" instead of "1, 2, 3…". Where do you change this?</div>
+    <button class="quiz-opt" data-correct="false">Home tab → Font</button>
+    <button class="quiz-opt" data-correct="true">Right-click page number → Format Page Numbers…</button>
+    <button class="quiz-opt" data-correct="false">You can't — the format is fixed</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+// SLIDE 11 — Breaks intro (3 types)
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 Page &amp; Section Breaks · Part 1</div>
+  <h1>Three types of page breaks</h1>
+  <p class="lead">When content is too long to fit a page, the word processor moves the overflow to a new page automatically. But sometimes you need to control this yourself.</p>
+  <table class="spec-table" style="margin-top:14px;">
+    <tr><th>Type</th><th>What it does</th><th>Who triggers it</th></tr>
+    <tr><td><strong>🤖 Automatic</strong></td><td>New page when content overflows margins</td><td>Word, on its own</td></tr>
+    <tr><td><strong>✋ Manual page break</strong></td><td>Forces content onto a fresh new page</td><td>You, on purpose</td></tr>
+    <tr><td><strong>✂️ Section break</strong></td><td>Starts a new section — different layout allowed</td><td>You, on purpose</td></tr>
+  </table>
+  <div class="panel" style="margin-top:14px;"><p style="margin:0;font-size:13px;color:var(--ink-soft);">👀 Breaks are invisible by default — turn on <strong>Show/Hide ¶</strong> (Home tab) to see them.</p></div>
+</div>
+`);
+
+// SLIDE 12 — Page break demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 Page &amp; Section Breaks · Part 2</div>
+  <h1>Inserting a manual page break</h1>
+  <p class="lead">We want the Event Schedule to always begin on page 2 — never sharing space with the welcome message.</p>
+  <div class="demo-block">
+    <span class="step-label" id="pbStepLabel">Step 1 — Place cursor where the new page should start, then open Insert</span>
+    <div class="ribbon" style="max-width:480px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs"><div class="ribbon-tab">Home</div><div class="ribbon-tab active">Insert</div><div class="ribbon-tab">Layout</div></div>
+      <div class="ribbon-body">
+        <div class="rb-group"><div class="rb-btn" id="pbBtn"><div class="ic">⤓</div>Page Break</div><div class="rb-group-label">Pages</div></div>
+      </div>
+      <div class="cursor-dot" id="pbCursor"></div>
+    </div>
+    <div class="doc-pages-row" style="margin-top:18px;">
+      <div class="doc-page" id="pbDocPreview">
+        <div class="doc-title">Welcome to Our Open House!</div>
+        <div class="doc-body"><p>We're thrilled to welcome you and your family...</p></div>
+        <div class="doc-break-mark" id="pbBreakMark">— Page Break —</div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playPageBreakDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Insert tab → Pages group → Page Break. Everything after the cursor jumps to a fresh new page.</p>
+  </div>
+</div>
+`);
+
+// SLIDE 13 — Section break intro
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 Page &amp; Section Breaks · Part 3</div>
+  <h1>What's a section break?</h1>
+  <p class="lead">A page break just moves content to a new page. A <strong>section break</strong> does more — it lets DIFFERENT formatting apply on each side of it.</p>
+  <div class="flip-card" style="max-width:420px;margin:16px auto 0;" onclick="this.classList.toggle('flipped')">
+    <div class="flip-inner">
+      <div class="flip-face flip-front"><div class="term">Section break</div><div class="hint">Tap to reveal</div></div>
+      <div class="flip-face flip-back"><div class="def">Separates parts of a document so that different formatting or layouts can be applied to each part — e.g. one section in Portrait with 1 column, another in Landscape with a wide table.</div></div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:16px;">
+    <p style="margin:0 0 4px;font-size:13.5px;color:var(--ink-soft);">In our newsletter: a <strong>section break</strong> sits between the pages, so each side can look completely different.</p>
+    <div class="sb-visual">
+      <div class="sb-mini-page"><div class="sb-fill"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
+      <span class="sb-scissors">✂️</span>
+      <div class="sb-mini-page wide"><div class="sb-fill"><div class="bar"></div><div class="bar"></div></div></div>
+    </div>
+    <div class="sb-labels"><span>Page 1 · Portrait</span><span>Page 2 · Landscape</span></div>
+  </div>
+</div>
+`);
+
+// SLIDE 14 — Section break demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 Page &amp; Section Breaks · Part 4</div>
+  <h1>Inserting a section break (Next Page)</h1>
+  <div class="demo-block">
+    <span class="step-label" id="sbStepLabel">Step 1 — Layout tab → Breaks</span>
+    <div class="ribbon" style="max-width:520px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs"><div class="ribbon-tab">Home</div><div class="ribbon-tab">Insert</div><div class="ribbon-tab active">Layout</div></div>
+      <div class="ribbon-body">
+        <div class="rb-group" style="position:relative;">
+          <div class="rb-btn" id="sbBtn"><div class="ic">↕</div>Breaks</div>
+          <div class="rb-group-label">Page Setup</div>
+          <div class="rb-dropdown" id="sbDropdown" style="min-width:210px;">
+            <div class="rb-dropdown-heading">Page Breaks</div>
+            <div class="rb-dropdown-item">Page</div>
+            <div class="rb-dropdown-heading">Section Breaks</div>
+            <div class="rb-dropdown-item" id="sbNextPageItem">Next Page</div>
+            <div class="rb-dropdown-item">Continuous</div>
+          </div>
+        </div>
+      </div>
+      <div class="cursor-dot" id="sbCursor"></div>
+    </div>
+    <div class="doc-pages-row" style="margin-top:18px;">
+      <div class="doc-page" id="sbDocPreview">
+        <div class="doc-title">Welcome to Our Open House!</div>
+        <div class="doc-body"><p>We're thrilled to welcome you...</p></div>
+        <div class="doc-break-mark" id="sbBreakMark">— Section Break (Next Page) —</div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playSectionBreakDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Layout tab → Page Setup → Breaks → Section Breaks → "Next Page". A new SECTION begins on the following page, ready for its own layout.</p>
+  </div>
+</div>
+`);
+
+// SLIDE 15 — Orientation demo
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 Page &amp; Section Breaks · Part 5</div>
+  <h1>Flipping the new section to Landscape</h1>
+  <p class="lead">With the section break in place, we can now change JUST the second section's orientation — the wide Event Schedule table will fit perfectly.</p>
+  <div class="demo-block">
+    <span class="step-label" id="orStepLabel">Step 1 — Cursor in Section 2 → Layout → Orientation</span>
+    <div class="ribbon" style="max-width:420px;margin:0 auto;position:relative;">
+      <div class="ribbon-tabs"><div class="ribbon-tab">Home</div><div class="ribbon-tab">Insert</div><div class="ribbon-tab active">Layout</div></div>
+      <div class="ribbon-body">
+        <div class="rb-group" style="position:relative;">
+          <div class="rb-btn" id="orBtn"><div class="ic">▭</div>Orientation</div>
+          <div class="rb-group-label">Page Setup</div>
+          <div class="rb-dropdown" id="orDropdown" style="min-width:130px;">
+            <div class="rb-dropdown-item">▯ Portrait</div>
+            <div class="rb-dropdown-item" id="orLandscapeItem">▭ Landscape</div>
+          </div>
+        </div>
+      </div>
+      <div class="cursor-dot" id="orCursor"></div>
+    </div>
+    <div class="doc-pages-row" style="margin-top:18px;">
+      <div class="doc-page" id="orP1">
+        <div class="doc-title">Welcome</div>
+        <div class="doc-body"><p>Section 1 · Portrait</p></div>
+      </div>
+      <div class="doc-page" id="orP2">
+        <div class="doc-title">Schedule</div>
+        <div class="doc-body"><p>Section 2</p></div>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="replay-btn" onclick="playOrientationDemo()">▶ Replay demo</button>
+    </div>
+    <p class="demo-caption">Because a section break separates them, only Section 2 flips to Landscape — Section 1 stays Portrait, unaffected.</p>
+  </div>
+  <div class="grid2" style="margin-top:16px;">
+    <div class="panel"><strong style="font-size:13px;">Portrait</strong><p style="font-size:12.5px;color:var(--ink-soft);margin:4px 0 0;">Letters, notices, notes — anything read like a normal page.</p></div>
+    <div class="panel"><strong style="font-size:13px;">Landscape</strong><p style="font-size:12.5px;color:var(--ink-soft);margin:4px 0 0;">Flyers, brochures, and wide multi-column documents like our schedule.</p></div>
+  </div>
+</div>
+`);
+
+// SLIDE 16 — Did you know
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 · Enrichment</div>
+  <h1>Did you know?</h1>
+  <div class="dyk-box">
+    <div class="dyk-label">💡 Not tested · just for interest</div>
+    <div class="dyk-bites">
+      <div class="dyk-bite"><span class="be-icon">🎯</span><span>Section breaks aren't just for orientation & columns.</span></div>
+      <div class="dyk-bite"><span class="be-icon">📑</span><span>Each section can have its <b>own header & footer</b> too.</span></div>
+      <div class="dyk-bite"><span class="be-icon">🔢</span><span>Each section can even <b>restart its own page numbering.</b></span></div>
+      <div class="dyk-bite"><span class="be-icon">🔁</span><span>Choose "Continue from previous section" or "Start at" a new number — your call, per section.</span></div>
+    </div>
+  </div>
+</div>
+`);
+
+// SLIDE 17 — Breaks quiz
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 · Check</div>
+  <h1>Quick check</h1>
+  <div class="quiz-box" id="quiz-breaks1">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">Which type of break should you use if you want ONE page in your document to be Landscape while the rest stay Portrait?</div>
+    <button class="quiz-opt" data-correct="false">Automatic page break</button>
+    <button class="quiz-opt" data-correct="false">Manual page break</button>
+    <button class="quiz-opt" data-correct="true">Section break</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">6.2.3 · Check</div>
+  <h1>Quick check</h1>
+  <div class="quiz-box" id="quiz-breaks2">
+    <div class="attempts-label">You get 2 tries.</div>
+    <div class="quiz-q">Where do you find "Show/Hide ¶" to reveal hidden page and section break marks?</div>
+    <button class="quiz-opt" data-correct="true">Home tab, in the Paragraph group</button>
+    <button class="quiz-opt" data-correct="false">Insert tab, in the Pages group</button>
+    <button class="quiz-opt" data-correct="false">It cannot be shown — breaks are always invisible</button>
+    <div class="quiz-feedback"></div>
+  </div>
+</div>
+`);
+
+// SLIDE 19 — Recap
+slideHTML.push(`
+<div class="slide-inner">
+  <div class="kicker">Mission Recap</div>
+  <h1><span class="mascot" style="font-size:32px;">🎉</span> You're ready to build the newsletter</h1>
+  <div class="panel" style="margin-top:12px;">
+    <ul class="plain">
+      <li><strong>Columns</strong> — Layout → Columns, choose single or multi-column based on the type of document.</li>
+      <li><strong>Headers &amp; Footers</strong> — Insert → Header/Footer, repeats on every page automatically.</li>
+      <li><strong>Page numbers</strong> — Insert → Page Number, format and starting value are customisable.</li>
+      <li><strong>Page breaks</strong> — Insert → Page Break, forces content onto a new page.</li>
+      <li><strong>Section breaks</strong> — Layout → Breaks → Next Page, lets each section have its own layout, including orientation.</li>
+    </ul>
+  </div>
+  <div class="word-banner">
+    <div class="wicon">W</div>
+    <div class="wtext"><b>Time to open Microsoft Word.</b> Grab your practice files for this section, and then try the "Escape the Chain Letter" game to test what you've learned!</div>
+  </div>
+</div>
+`);
+
+/* Inject all slides */
+const viewport = document.getElementById('viewport');
+slideHTML.forEach((html,i)=>{
+  const div = document.createElement('div');
+  div.className='slide';
+  div.id='slide-'+i;
+  div.innerHTML = html;
+  viewport.appendChild(div);
+});
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+let current = 0;
+const total = slideHTML.length;
+
+function buildDots(){
+  const wrap = document.getElementById('dotsWrap');
+  wrap.innerHTML='';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='dot';
+    d.onclick=()=>{current=i;render();};
+    wrap.appendChild(d);
+  }
+}
+buildDots();
+
+function currentSectionInfo(){
+  for(let i=0;i<SECTIONS.length;i++){
+    if(current>=SECTIONS[i].start && current<=SECTIONS[i].end){
+      return {idx:i+1, total:SECTIONS.length, label:SECTIONS[i].label};
+    }
+  }
+  return {idx:1,total:SECTIONS.length,label:SECTIONS[0].label};
+}
+
+function render(){
+  document.querySelectorAll('.slide').forEach((s,i)=>{
+    s.classList.toggle('active', i===current);
+  });
+  document.getElementById('progressFill').style.width = (((current+1)/total)*100)+'%';
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d,i)=>{
+    d.classList.toggle('active', i===current);
+    d.classList.toggle('done', i<current);
+  });
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').textContent = current===total-1 ? '🎉 Done' : 'Next →';
+  const info = currentSectionInfo();
+  document.getElementById('eyebrowText').textContent = `SECTION ${info.idx} OF ${info.total} · ${info.label.toUpperCase()}`;
+  window.scrollTo(0,0);
+}
+function go(dir){
+  current = Math.max(0, Math.min(total-1, current+dir));
+  render();
+}
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowRight') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+render();
+
+/* ============================================================
+   GLOSSARY + JUMP MENU
+   ============================================================ */
+function openGlossary(){
+  const list = document.getElementById('glossList');
+  list.innerHTML = GLOSSARY.map(g=>`<div class="gloss-item"><div class="gloss-term">${g.term}</div><div class="gloss-def">${g.def}</div></div>`).join('');
+  document.getElementById('glossOverlay').classList.add('show');
+}
+function openJump(){
+  const list = document.getElementById('jumpList');
+  let html='';
+  SECTIONS.forEach((s,i)=>{
+    html+=`<div class="jump-item section-head">Section ${i+1} of ${SECTIONS.length}</div>`;
+    html+=`<div class="jump-item" onclick="current=${s.start};render();closeOverlay('jumpOverlay');"><div class="num">${i+1}</div>${s.label}</div>`;
+  });
+  list.innerHTML = html;
+  document.getElementById('jumpOverlay').classList.add('show');
+}
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+
+/* ============================================================
+   QUIZ LOGIC (2 attempts)
+   ============================================================ */
+document.querySelectorAll('.quiz-box').forEach(box=>{
+  let attempts = 0;
+  const opts = box.querySelectorAll('.quiz-opt');
+  const fb = box.querySelector('.quiz-feedback');
+  opts.forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      if(opt.classList.contains('disabled') || box.dataset.solved) return;
+      attempts++;
+      const isCorrect = opt.dataset.correct === 'true';
+      if(isCorrect){
+        opt.classList.add('correct');
+        opts.forEach(o=>o.classList.add('disabled'));
+        fb.textContent = "✅ Correct! " + (attempts>1 ? "Nice recovery." : "Got it first try.");
+        fb.className='quiz-feedback show correct-fb';
+        box.dataset.solved = "true";
+      } else {
+        opt.classList.add('wrong');
+        opt.classList.add('disabled');
+        if(attempts>=2){
+          opts.forEach(o=>{ if(o.dataset.correct==='true') o.classList.add('correct'); o.classList.add('disabled'); });
+          fb.textContent = "The correct answer is highlighted above. Review this section if needed before moving on.";
+          fb.className='quiz-feedback show wrong-fb';
+          box.dataset.solved = "true";
+        } else {
+          fb.textContent = "Not quite — you have 1 more try.";
+          fb.className='quiz-feedback show wrong-fb';
+        }
+      }
+    });
+  });
+});
+
+/* ============================================================
+   DEMO ANIMATIONS
+   ============================================================ */
+function moveCursor(cursorEl, targetEl, containerEl){
+  const cRect = containerEl.getBoundingClientRect();
+  const tRect = targetEl.getBoundingClientRect();
+  const x = tRect.left - cRect.left + tRect.width/2 - 8;
+  const y = tRect.top - cRect.top + tRect.height/2 - 8;
+  cursorEl.style.left = x+'px';
+  cursorEl.style.top = y+'px';
+  cursorEl.classList.add('show');
+}
+
+async function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function playColumnsDemo(){
+  const label = document.getElementById('colStepLabel');
+  const ribbon = document.querySelector('#colBtn').closest('.ribbon');
+  const cursor = document.getElementById('colCursor');
+  const tab = document.getElementById('colLayoutTab');
+  const btn = document.getElementById('colBtn');
+  const dropdown = document.getElementById('colDropdown');
+  const twoItem = document.getElementById('colTwoItem');
+  const preview = document.getElementById('colDocPreview');
+
+  dropdown.classList.remove('open'); btn.classList.remove('active-click'); preview.classList.remove('two-col');
+  label.textContent = "Step 1 — Select the text, then open the Layout tab";
+  moveCursor(cursor, tab, ribbon);
+  await wait(900);
+  label.textContent = "Step 2 — Click Columns in the Page Setup group";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  btn.classList.add('active-click');
+  dropdown.classList.add('open');
+  await wait(700);
+  label.textContent = "Step 3 — Choose 'Two'";
+  moveCursor(cursor, twoItem, ribbon);
+  twoItem.classList.add('highlight');
+  await wait(900);
+  label.textContent = "Result — text re-flows into two columns instantly";
+  preview.classList.add('two-col');
+  await wait(600);
+  cursor.classList.remove('show');
+  twoItem.classList.remove('highlight');
+  dropdown.classList.remove('open');
+  btn.classList.remove('active-click');
+}
+
+async function playHFDemo(){
+  const label = document.getElementById('hfStepLabel');
+  const ribbon = document.querySelector('#hfBtn').closest('.ribbon');
+  const cursor = document.getElementById('hfCursor');
+  const tab = document.getElementById('hfInsertTab');
+  const btn = document.getElementById('hfBtn');
+  const dropdown = document.getElementById('hfDropdown');
+  const blankItem = document.getElementById('hfBlankItem');
+  const preview = document.getElementById('hfDocPreview');
+
+  dropdown.classList.remove('open'); btn.classList.remove('active-click'); preview.classList.remove('show-header');
+  label.textContent = "Step 1 — Open the Insert tab";
+  moveCursor(cursor, tab, ribbon);
+  await wait(900);
+  label.textContent = "Step 2 — Click Header";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  btn.classList.add('active-click');
+  dropdown.classList.add('open');
+  await wait(700);
+  label.textContent = "Step 3 — Choose 'Blank' and type your text";
+  moveCursor(cursor, blankItem, ribbon);
+  blankItem.classList.add('highlight');
+  await wait(900);
+  label.textContent = "Result — header now repeats on every page";
+  preview.classList.add('show-header');
+  await wait(600);
+  cursor.classList.remove('show');
+  blankItem.classList.remove('highlight');
+  dropdown.classList.remove('open');
+  btn.classList.remove('active-click');
+}
+
+async function playPageNumDemo(){
+  const label = document.getElementById('pnStepLabel');
+  const ribbon = document.querySelector('#pnBtn').closest('.ribbon');
+  const cursor = document.getElementById('pnCursor');
+  const btn = document.getElementById('pnBtn');
+  const dropdown = document.getElementById('pnDropdown');
+  const bottomItem = document.getElementById('pnBottomItem');
+  const formatItem = document.getElementById('pnFormatItem');
+  const dialog = document.getElementById('pnFormatDialog');
+  const startVal = document.getElementById('pnStartValue');
+  const footerNum = document.getElementById('pnFooterNum');
+  const preview = document.getElementById('pnDocPreview');
+
+  dropdown.classList.remove('open'); dialog.style.display='none'; preview.classList.remove('show-footer');
+  startVal.textContent='1'; footerNum.textContent='1';
+  label.textContent = "Step 1 — Insert → Page Number";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  dropdown.classList.add('open');
+  label.textContent = "Step 2 — Choose 'Bottom of Page'";
+  moveCursor(cursor, bottomItem, ribbon);
+  bottomItem.classList.add('highlight');
+  await wait(900);
+  preview.classList.add('show-footer');
+  bottomItem.classList.remove('highlight');
+  label.textContent = "Step 3 — Want a custom start number? Click 'Format Page Numbers…'";
+  moveCursor(cursor, formatItem, ribbon);
+  formatItem.classList.add('highlight');
+  await wait(900);
+  dropdown.classList.remove('open');
+  dialog.style.display='block';
+  await wait(700);
+  label.textContent = "Step 4 — Set 'Start at' to 5 (for example)";
+  await wait(500);
+  startVal.textContent='5'; footerNum.textContent='5';
+  await wait(1000);
+  cursor.classList.remove('show');
+  formatItem.classList.remove('highlight');
+}
+
+async function playPageBreakDemo(){
+  const label = document.getElementById('pbStepLabel');
+  const ribbon = document.querySelector('#pbBtn').closest('.ribbon');
+  const cursor = document.getElementById('pbCursor');
+  const btn = document.getElementById('pbBtn');
+  const preview = document.getElementById('pbDocPreview');
+  preview.classList.remove('show-break');
+  label.textContent = "Step 1 — Place cursor where the new page should start";
+  await wait(500);
+  label.textContent = "Step 2 — Insert tab → Page Break";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  btn.classList.add('active-click');
+  await wait(500);
+  label.textContent = "Result — a Page Break mark appears; content after it jumps to page 2";
+  preview.classList.add('show-break');
+  await wait(700);
+  cursor.classList.remove('show');
+  btn.classList.remove('active-click');
+}
+
+async function playSectionBreakDemo(){
+  const label = document.getElementById('sbStepLabel');
+  const ribbon = document.querySelector('#sbBtn').closest('.ribbon');
+  const cursor = document.getElementById('sbCursor');
+  const btn = document.getElementById('sbBtn');
+  const dropdown = document.getElementById('sbDropdown');
+  const nextPageItem = document.getElementById('sbNextPageItem');
+  const preview = document.getElementById('sbDocPreview');
+  dropdown.classList.remove('open'); preview.classList.remove('show-break');
+  label.textContent = "Step 1 — Layout tab → Breaks";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  btn.classList.add('active-click');
+  dropdown.classList.add('open');
+  await wait(700);
+  label.textContent = "Step 2 — Under Section Breaks, choose 'Next Page'";
+  moveCursor(cursor, nextPageItem, ribbon);
+  nextPageItem.classList.add('highlight');
+  await wait(1000);
+  label.textContent = "Result — a new SECTION begins on page 2, ready for its own layout";
+  preview.classList.add('show-break');
+  await wait(700);
+  cursor.classList.remove('show');
+  nextPageItem.classList.remove('highlight');
+  dropdown.classList.remove('open');
+  btn.classList.remove('active-click');
+}
+
+async function playOrientationDemo(){
+  const label = document.getElementById('orStepLabel');
+  const ribbon = document.querySelector('#orBtn').closest('.ribbon');
+  const cursor = document.getElementById('orCursor');
+  const btn = document.getElementById('orBtn');
+  const dropdown = document.getElementById('orDropdown');
+  const landscapeItem = document.getElementById('orLandscapeItem');
+  const p2 = document.getElementById('orP2');
+  p2.classList.remove('landscape'); dropdown.classList.remove('open');
+  label.textContent = "Step 1 — Click into Section 2 (the Schedule page)";
+  await wait(500);
+  label.textContent = "Step 2 — Layout tab → Orientation";
+  moveCursor(cursor, btn, ribbon);
+  await wait(900);
+  btn.classList.add('active-click');
+  dropdown.classList.add('open');
+  await wait(700);
+  label.textContent = "Step 3 — Choose 'Landscape'";
+  moveCursor(cursor, landscapeItem, ribbon);
+  landscapeItem.classList.add('highlight');
+  await wait(900);
+  label.textContent = "Result — only Section 2 flips to Landscape. Section 1 is untouched.";
+  p2.classList.add('landscape');
+  await wait(700);
+  cursor.classList.remove('show');
+  landscapeItem.classList.remove('highlight');
+  dropdown.classList.remove('open');
+  btn.classList.remove('active-click');
+}
+</script>
+</body>
+</html>
